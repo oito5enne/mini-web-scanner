@@ -1,0 +1,35 @@
+{
+  "target": "https://testphp.vulnweb.com",
+  "findings": [
+    {
+      "check": "tls",
+      "severity": "HIGH",
+      "message": "Servido via HTTP sem redirecionar para HTTPS.",
+      "detail": {}
+    },
+    {
+      "check": "headers",
+      "severity": "MEDIUM",
+      "message": "Ausente: Content-Security-Policy.",
+      "detail": { "motivo": "Mitiga XSS e injeção de conteúdo." }
+    },
+    {
+      "check": "headers",
+      "severity": "MEDIUM",
+      "message": "Ausente: Strict-Transport-Security.",
+      "detail": { "motivo": "Força HTTPS (HSTS)." }
+    },
+    {
+      "check": "headers",
+      "severity": "LOW",
+      "message": "Ausente: X-Frame-Options.",
+      "detail": { "motivo": "Protege contra clickjacking." }
+    },
+    {
+      "check": "reachability",
+      "severity": "INFO",
+      "message": "Alvo respondeu 200.",
+      "detail": { "status": 200, "server": "nginx" }
+    }
+  ]
+}
