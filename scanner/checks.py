@@ -27,16 +27,31 @@ def _get(url):
 
 
 def check_reachability(url):
-    """Confirma que o alvo responde e reporta status/servidor."""
-    try:
-        resp = _get(url)
-    except requests.RequestException as exc:
-        return None, [finding("reachability", HIGH,
-                              "Alvo inacessível.", {"erro": str(exc)})]
-    server = resp.headers.get("Server", "(não divulgado)")
-    return resp, [finding("reachability", INFO,
-                          f"Alvo respondeu {resp.status_code}.",
-                          {"status": resp.status_code, "server": server})]
+    """Confirma que o alvo responde; tenta HTTP se o HTTPS falhar.
+
+    Retorna (resp, findings, url_resolvida). A url_resolvida é a que de
+    fato respondeu, para que os demais checks usem o mesmo endereço.
+    """
+    candidates = [url]
+    if url.startswith("https://"):
+        candidates.append("http://" + url[len("https://"):])
+
+    last_exc = None
+    for candidate in candidates:
+        try:
+            resp = _get(candidate)
+        except requests.RequestException as exc:
+            last_exc = exc
+            continue
+        server = resp.headers.get("Server", "(não divulgado)")
+        note = "" if candidate == url else " (HTTPS indisponível; usando HTTP)"
+        return resp, [finding("reachability", INFO,
+                              f"Alvo respondeu {resp.status_code}.{note}",
+                              {"status": resp.status_code, "server": server,
+                               "url": candidate})], candidate
+
+    return None, [finding("reachability", HIGH, "Alvo inacessível.",
+                          {"erro": str(last_exc)})], url
 
 
 def check_security_headers(resp):

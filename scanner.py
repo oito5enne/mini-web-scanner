@@ -17,11 +17,12 @@ from scanner.utils import normalize_url
 
 def run_scan(target):
     findings = []
-    resp, reach = checks.check_reachability(target)
+    resp, reach, resolved = checks.check_reachability(target)
     findings += reach
     if resp is None:
         return findings  # inacessível: não há o que mais checar
 
+    target = resolved  # usa o endereço que de fato respondeu (http/https)
     for check in checks.ALL_CHECKS_REQUIRING_RESP:
         findings += check(resp)
     for check in checks.ALL_CHECKS_REQUIRING_URL:
